@@ -29,7 +29,7 @@ const schema = z.object({
   gender: z.enum(['male', 'female'], {message: 'Please select a gender'}),
   acceptTermsAndConds: z.literal(true, {
     errorMap: () => ({message: 'Please accept terms and conditions'}),
-  }),
+  })
 })
 
 export default function Home() {

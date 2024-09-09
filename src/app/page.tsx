@@ -17,9 +17,37 @@ import {
   TextInput,
   Title,
 } from "@mantine/core";
+import { useForm, zodResolver } from "@mantine/form";
+import { z } from "zod"
+
+//create Zod schema for validations
+const schema = z.object({
+  firstName: z.string().min(3, { message: 'First name must have at least 3 chars' }),
+  lastName: z.string().min(3, { message: 'Last name must have at least 3 chars' }),
+  email: z.string().email({ message: 'Email must have at least'}),
+  plan: z.enum(['funrun', 'mini', 'half', 'full'], {message: 'Please select a plan'}),
+  gender: z.enum(['male', 'female'], {message: 'Please select a gender'}),
+  acceptTermsAndConds: z.literal(true, {
+    errorMap: () => ({message: 'Please accept terms and conditions'}),
+  }),
+})
 
 export default function Home() {
   const [opened, { open, close }] = useDisclosure(false);
+
+  const form = useForm({
+    initialValues: { //เป็นการกำหนดค่าเริ่มต้น
+      firstName: "",
+      lastName: "",
+      email: "",
+      plan: null,
+      gender: null,
+      acceptTermsAndConds: false,
+    },
+    validate: zodResolver(schema)
+  });
+
+  console.log(form.values);
 
   return (
     <div>
@@ -29,24 +57,30 @@ export default function Home() {
           Register CMU Marathon 🥈
         </Title>
         <Space h="lg" />
+
+        {/*add form*/}
+        <form onSubmit = {form.onSubmit((values) => console.log(values))}>
+
         <Stack gap="sm">
           <Group grow align="start">
-            <TextInput label="First Name" />
-            <TextInput label="Last Name" />
+            <TextInput label="First Name" {...form.getInputProps('firstName')}/>
+            <TextInput label="Last Name" {...form.getInputProps('lastName')}/>
           </Group>
-          <TextInput label="Email" />
+          <TextInput label="Email" {...form.getInputProps('email')}/>
           <Select
             label="Plan"
             data={runningPlans}
             placeholder="Please select plan..."
+            {...form.getInputProps('plan')}
           />
           <Space />
-          <Radio.Group label="Gender">
+          <Radio.Group label="Gender" {...form.getInputProps('gender')}>
             <Radio value="male" label="Male 👨" mb="xs" />
             <Radio value="female" label="Female 👧" />
           </Radio.Group>
           <Space />
           <Checkbox
+          {...form.getInputProps('acceptTermsAndConds')}
             label={
               <Text>
                 I accept{" "}
@@ -56,8 +90,11 @@ export default function Home() {
               </Text>
             }
           />
-          <Button>Register</Button>
+          <Button type="submit">Register</Button>
         </Stack>
+
+        </form>
+
       </Container>
 
       <TermsAndCondsModal opened={opened} close={close} />
